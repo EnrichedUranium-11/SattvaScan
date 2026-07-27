@@ -1,0 +1,6 @@
+# Allow full crawling for all search engine bots
+User-agent: *
+Allow: /
+
+# Direct Googlebot and Bingbot to the Sitemap
+Sitemap: https://sattvascan.in/sitemap.xml

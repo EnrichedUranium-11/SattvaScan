@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- Primary Meta Tags & SEO -->
+  <title>Sattva Scan — Food Barcode & Ingredient Scanner for India</title>
+  <meta name="title" content="Sattva Scan — Food Barcode & Ingredient Scanner for India">
+  <meta name="description" content="Scan packaged food barcodes in India. Detect hidden palm oil, maida, trans fats, synthetic colors, and INS food additives instantly. Built for health-conscious Indian families.">
+  <meta name="keywords" content="sattva scan, sattvascan.in, food barcode scanner india, fssai inspector app, open food facts india, palm oil detector app, ins code lookup, food additive checker, healthy food scanner india, packaged food audit">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="author" content="Sattva Scan">
+  <link rel="canonical" href="https://sattvascan.in/">
+  <meta name="theme-color" content="#FAF8F3">
+
+  <!-- Favicon & PWA Webmanifest -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="manifest" href="site.webmanifest">
+
+  <!-- Open Graph / Facebook / WhatsApp Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sattvascan.in/">
+  <meta property="og:title" content="Sattva Scan — Food Barcode & Ingredient Scanner for India">
+  <meta property="og:description" content="Scan packaged food barcodes in India. Detect hidden palm oil, maida, trans fats, and harmful INS additives instantly for your family.">
+  <meta property="og:image" content="https://sattvascan.in/logo.png">
+  <meta property="og:site_name" content="Sattva Scan">
+  <meta property="og:locale" content="en_IN">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://sattvascan.in/">
+  <meta name="twitter:title" content="Sattva Scan — Clean & Wholesome Food Scanner">
+  <meta name="twitter:description" content="Instantly audit packaged foods in India for family safety. Detect palm oil, maida, and chemical E-numbers.">
+  <meta name="twitter:image" content="https://sattvascan.in/logo.png">
+
+  <!-- Premium Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tabler Icons via CDN (Line Style Only) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Core Scanning & OCR CDNs -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://unpkg.com/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
+
+  <!-- Structured Data (JSON-LD) for Google Search Rich Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Sattva Scan",
+    "url": "https://sattvascan.in/",
+    "description": "Barcode scanner and ingredient auditor for packaged food products in India.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "All",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sattva Scan",
+      "url": "https://sattvascan.in/",
+      "logo": "https://sattvascan.in/logo.png"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How does Sattva Scan work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Sattva Scan reads barcodes on packaged food items in India and audits ingredients against health indicators like palm oil, maida, trans fats, and INS additives."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Sattva Scan free to use in India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Sattva Scan is completely free for Indian consumers to check packaged food ingredients and clean eating recommendations."
+        }
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Mobile Screen Container -->
+  <div class="mobile-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-title">Sattva Scan</span>
+        <span class="brand-tagline">Clean & Wholesome</span>
+      </div>
+      <div class="header-actions">
+        <!-- Points system removed -->
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+      
+      <!-- ONBOARDING OVERLAY (3 Swipeable Screens) -->
+      <div class="onboarding-overlay" id="onboarding-overlay" style="display: none;">
+        <div class="onboarding-card">
+          <div class="onboarding-slides" id="onboarding-slides">
+            
+            <!-- Slide 1 -->
+            <div class="onboarding-slide active" data-slide="0">
+              <div class="slide-illustration">
+                <i class="ti ti-scan-eye"></i>
+              </div>
+              <h2 class="slide-heading">Know what you're eating</h2>
+              <p class="slide-text">Distill complex ingredients into calm clarity. Protect your health with clean, wholesome principles.</p>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="onboarding-slide" data-slide="1">
+              <div class="slide-illustration">
+                <i class="ti ti-users-group"></i>
+              </div>
+              <h2 class="slide-heading">Built for Indian families</h2>
+              <p class="slide-text">Simultaneously check compatibility for Jain, Halal, Veg, and custom allergen diets across generations.</p>
+              <div class="dietary-preview-icons">
+                <span class="tag-icon preview-veg"><i class="ti ti-leaf"></i> Veg</span>
+                <span class="tag-icon preview-jain"><i class="ti ti-praying-hands"></i> Jain</span>
+                <span class="tag-icon preview-halal"><i class="ti ti-moon"></i> Halal</span>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="onboarding-slide" data-slide="2">
+              <h2 class="slide-heading">Setup Your Profile</h2>
+              <p class="slide-subtext">Tell us about your dietary preferences to personalize your scan verdicts.</p>
+              
+              <div class="setup-wizard">
+                <!-- Step 1: Diet Selection -->
+                <div class="wizard-group">
+                  <label class="wizard-label">Step 1 — Diet type:</label>
+                  <select id="onboard-diet" class="wizard-select">
+                    <option value="vegetarian">🥗 Vegetarian</option>
+                    <option value="jain">📿 Jain Diet</option>
+                    <option value="vegan">🌱 Vegan</option>
+                    <option value="eggetarian">🥚 Eggetarian</option>
+                    <option value="halal">🌙 Halal</option>
+                    <option value="none">🍽️ No Restriction</option>
+                  </select>
+                </div>
+
+                <!-- Step 2: Clinical Conditions -->
+                <div class="wizard-group">
+                  <label class="wizard-label">Step 2 — Health conditions:</label>
+                  <div class="conditions-multiselect" id="onboard-conditions">
+                    <button type="button" class="cond-btn" data-cond="diabetic">Diabetic</button>
+                    <button type="button" class="cond-btn" data-cond="highbp">High BP</button>
+                    <button type="button" class="cond-btn" data-cond="kidney">Kidney condition</button>
+                    <button type="button" class="cond-btn" data-cond="pregnant">Pregnant</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Onboarding Footer Controls -->
+          <div class="onboarding-footer">
+            <div class="swipe-dots">
+              <span class="dot active"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <button class="btn btn-primary" id="onboarding-next-btn">Next <i class="ti ti-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: SCAN (Default) -->
+      <section id="tab-scan" class="tab-panel active">
+        <div class="scanner-wrapper">
+          <!-- Camera Viewfinder -->
+          <div class="camera-viewfinder" id="camera-viewfinder">
+            <div id="scanner-video-container"></div>
+            <div class="sweeping-line"></div>
+            <div class="viewfinder-overlay">
+              <i class="ti ti-focus-2"></i>
+            </div>
+            <!-- Restart / Retake Viewfinder Controls -->
+            <div class="viewfinder-controls" id="viewfinder-controls" style="display: none; display: flex; gap: 8px;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-restart-camera">
+                <i class="ti ti-refresh"></i> Restart
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-torch" style="display: none;">
+                <i class="ti ti-bolt"></i> Torch
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-camera-zoom" style="display: none;">
+                <i class="ti ti-zoom-in"></i> Zoom
+              </button>
+            </div>
+          </div>
+
+          <div class="scan-status" id="scan-status-message">
+            Align barcode inside the frame to scan
+          </div>
+
+          <!-- Fallbacks container -->
+          <div class="scan-fallbacks card" style="padding: 14px; margin-top: 14px;">
+            <div class="fallback-tabs" style="display: flex; justify-content: space-around; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 14px;">
+              <button type="button" class="fallback-tab-btn active" data-pane="fallback-search-pane" style="background: transparent; border: none; font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px; padding-bottom: 4px;"><i class="ti ti-search"></i> Search</button>
+              <button type="button" class="fallback-tab-btn" data-pane="fallback-barcode-pane" style="background: transparent; border: none; font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; padding-bottom: 4px;"><i class="ti ti-barcode"></i> Barcode</button>
+              <button type="button" class="fallback-tab-btn" data-pane="fallback-photo-pane" style="background: transparent; border: none; font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 4px; padding-bottom: 4px;"><i class="ti ti-photo"></i> Photo OCR</button>
+            </div>
+
+            <!-- Pane 1: Search -->
+            <div id="fallback-search-pane" class="fallback-pane">
+              <div class="fallback-row search-row" style="margin-bottom: 10px;">
+                <input type="text" id="product-search-input" placeholder="Search by name or brand..." class="manual-input">
+                <button class="btn btn-secondary btn-sm" id="btn-search-audit">Search</button>
+              </div>
+              <div class="quick-suggest-chips" style="margin-bottom: 0;">
+                <span>Try:</span>
+                <button class="chip-suggest" data-search="8901058820875">Maggi</button>
+                <button class="chip-suggest" data-search="8901491101830">Kurkure</button>
+                <button class="chip-suggest" data-search="8901262010022">Amul Butter</button>
+              </div>
+            </div>
+
+            <!-- Pane 2: Barcode -->
+            <div id="fallback-barcode-pane" class="fallback-pane" style="display: none;">
+              <div class="fallback-row" style="margin-bottom: 0;">
+                <input type="text" id="manual-barcode-input" placeholder="Enter EAN barcode manually..." class="manual-input">
+                <button class="btn btn-primary btn-sm" id="btn-manual-audit">Audit</button>
+              </div>
+            </div>
+
+            <!-- Pane 3: Photo OCR -->
+            <div id="fallback-photo-pane" class="fallback-pane" style="display: none;">
+              <div class="drag-drop-area" id="ocr-drop-area" style="padding: 16px;">
+                <i class="ti ti-camera" style="font-size: 24px;"></i>
+                <span style="font-size: 11px;">Upload Ingredients Photo</span>
+                <input type="file" id="ocr-file-input" accept="image/*" style="display: none;">
+              </div>
+              
+              <div id="ocr-processing-indicator" style="display: none;" class="ocr-status-indicator">
+                <div class="simple-spinner"></div>
+                <span style="font-size: 11px;">Extracting ingredients list...</span>
+              </div>
+
+              <!-- OCR Verification Area -->
+              <div id="ocr-verify-area" style="display: none;" class="ocr-verify-box" style="margin-top: 8px;">
+                <label for="ocr-results-text" style="font-size: 10px; font-weight: 700; color: var(--primary);">Verify Extracted Ingredients:</label>
+                <textarea id="ocr-results-text" rows="3" class="ocr-textarea"></textarea>
+                <input type="text" id="ocr-product-name" placeholder="Product Name..." class="ocr-text-input" style="margin-top: 6px;">
+                <button class="btn btn-primary btn-block btn-sm" id="btn-audit-ocr-text" style="margin-top: 6px; min-height: 38px;">Audit & Analyze</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: TODAY (Daily Tracker) -->
+      <section id="tab-today" class="tab-panel">
+        <div class="tracker-dashboard">
+          
+          <!-- Calories Circular Progress Card -->
+          <div class="tracker-card card">
+            <h3 class="card-title">Daily Energy Log</h3>
+            <div class="calorie-progress-layout">
+              <div class="circular-ring-wrapper">
+                <svg width="140" height="140" viewBox="0 0 150 150" class="ring-svg">
+                  <circle class="ring-track" cx="75" cy="75" r="60" stroke-width="12" fill="transparent"/>
+                  <circle class="ring-progress" id="calorie-progress-ring" cx="75" cy="75" r="60" stroke-width="12" fill="transparent" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
+                </svg>
+                <div class="ring-inner-text">
+                  <span class="ring-val" id="logged-calories">0</span>
+                  <span class="ring-lbl">of <span id="target-calories">2000</span> kcal</span>
+                </div>
+              </div>
+              <div class="streak-badge">
+                <i class="ti ti-flame"></i>
+                <span id="streak-text">0 days under sugar limit</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Nutrient Bars Card -->
+          <div class="nutrients-card card">
+            <h3 class="card-title">Daily Nutrient Targets</h3>
+            <div class="nutrient-progress-stack">
+              <div class="nut-progress-row">
+                <div class="nut-info">
+                  <span>Sugar Limit</span>
+                  <strong id="tracker-sugar-vals">0g / 40g</strong>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill fill-sugar" id="bar-sugar" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div class="nut-progress-row">
+                <div class="nut-info">
+                  <span>Sodium Limit</span>
+                  <strong id="tracker-sodium-vals">0mg / 1500mg</strong>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill fill-sodium" id="bar-sodium" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="nut-progress-row">
+                <div class="nut-info">
+                  <span>Protein Target</span>
+                  <strong id="tracker-protein-vals">0g / 60g</strong>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill fill-protein" id="bar-protein" style="width: 0%"></div>
+                </div>
+              </div>
+
+              <div class="nut-progress-row">
+                <div class="nut-info">
+                  <span>Carbs Target</span>
+                  <strong id="tracker-carbs-vals">0g / 220g</strong>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill fill-carbs" id="bar-carbs" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <button class="btn btn-secondary btn-block btn-sm" id="btn-reset-tracker" style="margin-top: 16px;">
+              <i class="ti ti-rotate"></i> Reset Today's Log
+            </button>
+          </div>
+
+          <!-- Weekly summary card (generates summary) -->
+          <div class="weekly-card card" id="weekly-summary-card">
+            <h3 class="card-title"><i class="ti ti-calendar-stats"></i> Weekly Health Summary</h3>
+            <p class="card-desc">Weekly snapshot computed automatically every Sunday based on your log history.</p>
+            <div class="weekly-metrics" id="weekly-metrics-area">
+              <span class="empty-state">Scan and log products to build your history!</span>
+            </div>
+            <button class="btn btn-outline btn-sm btn-block" id="btn-share-weekly" style="margin-top: 12px; display: none;">
+              <i class="ti ti-share"></i> Share Weekly Card
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: PANTRY (Scan History & Compare) -->
+      <section id="tab-pantry" class="tab-panel">
+        <div class="pantry-dashboard">
+          
+          <!-- History Category Selectors -->
+          <div class="category-tabs-container">
+            <button class="cat-tab active" data-cat="all">All</button>
+            <button class="cat-tab" data-cat="snacks">Snacks</button>
+            <button class="cat-tab" data-cat="breakfast">Breakfast</button>
+            <button class="cat-tab" data-cat="drinks">Drinks</button>
+            <button class="cat-tab" data-cat="dairy">Dairy</button>
+            <button class="cat-tab" data-cat="condiments">Condiments</button>
+          </div>
+
+          <!-- Compare Mode Toggle bar -->
+          <div class="compare-actions-bar card">
+            <div class="compare-info">
+              <i class="ti ti-columns"></i>
+              <span>Select two products in the list below to compare side-by-side.</span>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-start-compare" style="display: none;">Compare Selected</button>
+          </div>
+
+          <!-- Scanned Items List -->
+          <div class="pantry-list card" id="pantry-items-list">
+            <!-- Dynamically populated in app.js -->
+            <p class="empty-state">No products logged in your history yet. Scan code to begin.</p>
+          </div>
+
+          <!-- LEARN SECTION (Inside Pantry Tab) -->
+          <div class="learn-section card" style="margin-top: 20px;">
+            <h3 class="card-title"><i class="ti ti-book-open"></i> Sattva Learn</h3>
+            <p class="card-desc">Audit additives and learn clean eating principles.</p>
+
+            <!-- INS Lookup tool -->
+            <div class="ins-lookup-box">
+              <label for="ins-search-field">INS / E-code Lookup:</label>
+              <div class="lookup-row">
+                <input type="text" id="ins-search-field" placeholder="e.g. INS 471, E102, 621" class="manual-input">
+                <button class="btn btn-primary btn-sm" id="btn-ins-lookup">Search</button>
+              </div>
+              <div id="ins-lookup-result" class="ins-lookup-result-box" style="display: none;"></div>
+            </div>
+
+            <!-- Spotlight -->
+            <div class="spotlight-card" id="spotlight-card" style="margin-top: 16px;">
+              <h4 class="spotlight-title"><i class="ti ti-sparkles"></i> Ingredient of the Week</h4>
+              <div class="spotlight-content">
+                <strong>INS 407 (Carrageenan)</strong>
+                <p>A seaweed-derived thickener used in dairy/plant milks. Recent clinical audits link it to gut inflammation and digestive distress. Clean brands are swapping it for guar gum or packaging without stabilizers.</p>
+              </div>
+            </div>
+
+            <!-- FAQ Cards -->
+            <div class="faq-accordion" style="margin-top: 16px;">
+              <details class="faq-item">
+                <summary>Why is Maida harmful?</summary>
+                <div class="faq-content">
+                  Maida (refined wheat flour) is stripped of all wheat germ and fiber. This causes rapid spikes in blood glucose levels, taxing insulin secretion and increasing diabetes risks over time.
+                </div>
+              </details>
+              <details class="faq-item">
+                <summary>What makes Palmolein oil poor?</summary>
+                <div class="faq-content">
+                  Palmolein/Palm oil is heavily refined and contains ~50% saturated fats. It is cheap and stable for shelf life, but excessive consumption raises LDL cholesterol and arterial blockages.
+                </div>
+              </details>
+            </div>
+
+            <!-- Badges Checklist -->
+            <div class="badges-checklist-card" style="margin-top: 16px;">
+              <h4 class="spotlight-title"><i class="ti ti-award"></i> Knowledge Badges</h4>
+              <div class="badges-grid" id="pantry-badges-grid">
+                <!-- Dynamically updated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PROFILE (Family, Targets, Modes) -->
+      <section id="tab-profile" class="tab-panel">
+        <div class="profile-dashboard">
+          
+          <!-- Primary Profile Preferences -->
+          <div class="profile-primary-card card">
+            <h3 class="card-title">Primary Profile Settings</h3>
+            <div class="wizard-group">
+              <label class="wizard-label">Diet Preferences:</label>
+              <select id="profile-diet" class="wizard-select">
+                <option value="vegetarian">🥗 Vegetarian</option>
+                <option value="jain">📿 Jain Diet</option>
+                <option value="vegan">🌱 Vegan</option>
+                <option value="eggetarian">🥚 Eggetarian</option>
+                <option value="halal">🌙 Halal</option>
+                <option value="none">🍽️ No Restriction</option>
+              </select>
+            </div>
+            
+            <div class="wizard-group" style="margin-top: 12px;">
+              <label class="wizard-label">Allergies (Active Alerts):</label>
+              <div class="allergies-checkboxes" id="profile-allergies">
+                <label class="check-chip"><input type="checkbox" value="dairy"> Dairy</label>
+                <label class="check-chip"><input type="checkbox" value="gluten"> Gluten</label>
+                <label class="check-chip"><input type="checkbox" value="nuts"> Nuts</label>
+                <label class="check-chip"><input type="checkbox" value="soy"> Soy</label>
+              </div>
+            </div>
+
+            <div class="wizard-group" style="margin-top: 12px;">
+              <label class="wizard-label">Clinical Conditions:</label>
+              <div class="conditions-multiselect" id="profile-conditions">
+                <button type="button" class="cond-btn" data-cond="diabetic">Diabetic</button>
+                <button type="button" class="cond-btn" data-cond="highbp">High BP</button>
+                <button type="button" class="cond-btn" data-cond="kidney">Kidney condition</button>
+                <button type="button" class="cond-btn" data-cond="pregnant">Pregnant</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Modes -->
+          <div class="modes-card card">
+            <h3 class="card-title">Active Modes</h3>
+            <p class="card-desc">Active modes append diagnostic checks to your scan audits.</p>
+            <div class="modes-toggles">
+              <label class="mode-switch-row">
+                <span class="mode-label-text">👶 Kids Mode (Flags artificial dyes, honey for infants)</span>
+                <input type="checkbox" id="mode-kids" class="mode-checkbox">
+              </label>
+              <label class="mode-switch-row">
+                <span class="mode-label-text">🏋️ Fitness Mode (Checks protein quality, sugar ratio)</span>
+                <input type="checkbox" id="mode-fitness" class="mode-checkbox">
+              </label>
+              <label class="mode-switch-row">
+                <span class="mode-label-text">🤰 Pregnancy Mode (Caffeine, listeria risks)</span>
+                <input type="checkbox" id="mode-pregnancy" class="mode-checkbox">
+              </label>
+              <label class="mode-switch-row">
+                <span class="mode-label-text">🌱 Eco Mode (Palm oil, sustainability audits)</span>
+                <input type="checkbox" id="mode-eco" class="mode-checkbox">
+              </label>
+              <label class="mode-switch-row">
+                <span class="mode-label-text">🩺 Clinical Mode (Strict diabetic/bp filters)</span>
+                <input type="checkbox" id="mode-clinical" class="mode-checkbox">
+              </label>
+            </div>
+          </div>
+
+          <!-- Household Family Graph -->
+          <div class="family-graph-card card">
+            <h3 class="card-title"><i class="ti ti-users"></i> Family Health Graph</h3>
+            <p class="card-desc">Audits products for your entire family simultaneously during scans.</p>
+            
+            <div class="family-list" id="profile-family-members">
+              <!-- Dynamically populated in app.js -->
+            </div>
+
+            <!-- Add Member Form -->
+            <div class="add-member-form">
+              <h4>Add Family Member</h4>
+              <input type="text" id="new-member-name" placeholder="Member Name (e.g. Grandma, Dad)" class="manual-input btn-block">
+              
+              <div class="add-member-diet-row" style="margin-top: 8px;">
+                <select id="new-member-diet" class="wizard-select">
+                  <option value="none">🍽️ Unrestricted</option>
+                  <option value="vegetarian">🥗 Vegetarian</option>
+                  <option value="jain">📿 Jain Diet</option>
+                  <option value="vegan">🌱 Vegan</option>
+                  <option value="eggetarian">🥚 Eggetarian</option>
+                  <option value="halal">🌙 Halal</option>
+                </select>
+              </div>
+
+              <div class="add-member-allergies-row" style="margin-top: 8px;">
+                <label style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Allergies:</label>
+                <div class="allergies-checkboxes" id="new-member-allergies">
+                  <label class="check-chip"><input type="checkbox" value="dairy"> Dairy</label>
+                  <label class="check-chip"><input type="checkbox" value="gluten"> Gluten</label>
+                  <label class="check-chip"><input type="checkbox" value="nuts"> Nuts</label>
+                  <label class="check-chip"><input type="checkbox" value="soy"> Soy</label>
+                </div>
+              </div>
+
+              <div class="add-member-conditions-row" style="margin-top: 8px;">
+                <label style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; display: block;">Clinical Conditions:</label>
+                <div class="family-conditions-select" id="new-member-conditions">
+                  <button type="button" class="cond-btn" data-cond="diabetic">Diabetic</button>
+                  <button type="button" class="cond-btn" data-cond="highbp">High BP</button>
+                  <button type="button" class="cond-btn" data-cond="kidney">Kidney</button>
+                  <button type="button" class="cond-btn" data-cond="pregnant">Pregnant</button>
+                </div>
+              </div>
+
+              <button class="btn btn-secondary btn-block btn-sm" id="btn-add-member" style="margin-top: 12px;">
+                <i class="ti ti-user-plus"></i> Add to Household
+              </button>
+            </div>
+          </div>
+
+          <!-- Daily Targets Settings -->
+          <div class="targets-card-config card">
+            <h3 class="card-title">Custom Daily Targets</h3>
+            <div class="wizard-group">
+              <label class="wizard-label">Daily Calories (kcal):</label>
+              <input type="number" id="target-calories-input" value="2000" class="manual-input btn-block">
+            </div>
+            <div class="wizard-group" style="margin-top: 8px;">
+              <label class="wizard-label">Sugar Limit (g):</label>
+              <input type="number" id="target-sugar-input" value="40" class="manual-input btn-block">
+            </div>
+            <div class="wizard-group" style="margin-top: 8px;">
+              <label class="wizard-label">Sodium Limit (mg):</label>
+              <input type="number" id="target-sodium-input" value="1500" class="manual-input btn-block">
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+    <!-- MOBILE STICKY BOTTOM NAVIGATION BAR -->
+    <nav class="bottom-nav">
+      <button class="nav-btn active" data-tab="tab-scan">
+        <i class="ti ti-scan"></i>
+        <span>Scan</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-today">
+        <i class="ti ti-chart-bar"></i>
+        <span>Today</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-pantry">
+        <i class="ti ti-box"></i>
+        <span>Pantry</span>
+      </button>
+      <button class="nav-btn" data-tab="tab-profile">
+        <i class="ti ti-user"></i>
+        <span>Profile</span>
+      </button>
+    </nav>
+
+  </div> <!-- End Mobile Screen Container -->
+
+  <!-- PRODUCT RESULT SHEET (Slide-up card modal) -->
+  <div class="result-sheet-overlay" id="result-sheet-overlay" style="display: none;">
+    <div class="result-sheet">
+      <!-- Drag handle indicator -->
+      <div class="drag-handle" id="result-sheet-close"></div>
+      
+      <!-- Card Content Wrapper -->
+      <div class="result-sheet-body">
+        
+        <!-- Skeleton Loader (shows during fetch pass) -->
+        <div class="skeleton-loader-container" id="card-skeleton" style="display: none;">
+          <div class="skeleton-thumbnail"></div>
+          <div class="skeleton-line skeleton-title"></div>
+          <div class="skeleton-line skeleton-subtitle"></div>
+          <div class="skeleton-badge"></div>
+          <div class="skeleton-ring"></div>
+        </div>
+
+        <!-- Real Content Container -->
+        <div class="real-card-content" id="card-content-area">
+          
+          <!-- ABOVE THE FOLD -->
+          <div class="above-fold-card">
+            <div class="product-basic-info">
+              <div class="prod-img-wrap">
+                <!-- If image fails, fallback to letter icon -->
+                <img id="prod-img" src="" alt="Product Image" style="display: none;">
+                <div id="prod-img-fallback" class="img-fallback"><i class="ti ti-soup"></i></div>
+              </div>
+              <div class="prod-text-details">
+                <span class="prod-brand" id="prod-brand">Nestlé Maggi</span>
+                <h2 class="prod-name" id="prod-name">2-Minute Noodles</h2>
+                <div class="fssai-row" id="prod-fssai-row">
+                  <span class="badge-fssai">FSSAI Approved</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ONE Large Verdict Badge -->
+            <div class="verdict-banner" id="verdict-badge">
+              <span class="verdict-dot"></span>
+              <span class="verdict-text">Verifying...</span>
+            </div>
+            
+            <p class="verdict-reason" id="verdict-reason">Evaluating product additives and processing metrics...</p>
+
+            <div class="above-fold-metrics">
+              <!-- Health Score Progress Ring -->
+              <div class="score-ring-container">
+                <svg width="100" height="100" viewBox="0 0 100 100" class="ring-score-svg">
+                  <circle class="ring-score-track" cx="50" cy="50" r="40" stroke-width="8" fill="transparent"/>
+                  <circle class="ring-score-progress" id="score-ring-fill" cx="50" cy="50" r="40" stroke-width="8" fill="transparent" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"/>
+                </svg>
+                <div class="score-ring-inner">
+                  <span class="score-val" id="score-text">10</span>
+                  <span class="score-lbl">Score</span>
+                </div>
+              </div>
+
+              <!-- Dietary Tags Row -->
+              <div class="dietary-tags-hud">
+                <div class="diet-hud-item" id="hud-veg"><i class="ti"></i><span>Veg</span></div>
+                <div class="diet-hud-item" id="hud-nonveg"><i class="ti"></i><span>Non-Veg</span></div>
+                <div class="diet-hud-item" id="hud-vegan"><i class="ti"></i><span>Vegan</span></div>
+                <div class="diet-hud-item" id="hud-jain"><i class="ti"></i><span>Jain</span></div>
+                <div class="diet-hud-item" id="hud-halal"><i class="ti"></i><span>Halal</span></div>
+              </div>
+            </div>
+
+            <!-- Household graph validation line -->
+            <div class="household-suitability-line" id="hud-household-check">
+              <i class="ti ti-users"></i>
+              <span id="household-suitability-text">Safe for everyone in your family.</span>
+            </div>
+          </div>
+
+          <!-- BELOW THE FOLD (Expandable cards) -->
+          <div class="below-fold-accordion">
+            
+            <!-- Section 1: What's actually in this? -->
+            <details class="section-details" open>
+              <summary>
+                <span>What's actually in this?</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content">
+                <p class="section-summary-text">Interactive ingredient list. Tap any chip or INS code below to learn what it means.</p>
+                <div class="ingredients-chips-container" id="ingredients-chips">
+                  <!-- Dynamically populated chips -->
+                </div>
+              </div>
+            </details>
+
+            <!-- Section 2: The Honest Breakdown -->
+            <details class="section-details">
+              <summary>
+                <span>The honest breakdown</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content" id="honest-breakdown-list">
+                <!-- Dynamically populated cards with severities -->
+              </div>
+            </details>
+
+            <!-- Section 3: Caught Lying 🚩 (Marketing Lie Detector) -->
+            <details class="section-details">
+              <summary>
+                <span>Caught Lying 🚩</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content" id="marketing-lie-list">
+                <!-- Dynamically populated lie cards -->
+              </div>
+            </details>
+
+            <!-- Section 4: Nutrition -->
+            <details class="section-details">
+              <summary>
+                <span>Nutrition</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content">
+                <div class="nutrition-toggle-row">
+                  <span class="toggle-label">Nutrition Reference:</span>
+                  <div class="toggle-buttons">
+                    <button class="nut-toggle-btn active" id="btn-nut-serving">Per Serving</button>
+                    <button class="nut-toggle-btn" id="btn-nut-100g">Per 100g</button>
+                  </div>
+                </div>
+                
+                <div class="nutrition-stats-grid" id="nutrition-stats">
+                  <!-- JS generated stats list -->
+                </div>
+              </div>
+            </details>
+
+            <!-- Section 5: For You (Personalized Flags) -->
+            <details class="section-details" open>
+              <summary>
+                <span>For You</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content" id="personalized-flags-list">
+                <!-- JS generated alerts based on profile/modes -->
+              </div>
+            </details>
+
+            <!-- Section 6: Better Alternatives -->
+            <details class="section-details">
+              <summary>
+                <span>Better alternatives</span>
+                <i class="ti ti-chevron-down"></i>
+              </summary>
+              <div class="section-content" id="better-alternatives-list">
+                <!-- JS generated list of alternatives -->
+              </div>
+            </details>
+
+          </div> <!-- End Below Fold -->
+
+        </div> <!-- End Real Content Container -->
+
+        <!-- Create Product Form (displays if barcode is not found on OFF or DB) -->
+        <div id="not-found-form-container" style="display: none; padding: 10px 0;">
+          <div class="card" style="border-color: var(--accent); margin-bottom: 0;">
+            <h3 class="card-title" style="color: var(--accent); display: flex; align-items: center; gap: 6px; font-family: var(--font-serif); margin-bottom: 4px;">
+              <i class="ti ti-search"></i> Product Not Found
+            </h3>
+            <p class="card-desc" style="margin-bottom: 12px;">We searched our database and Google, but couldn't find this item. Help the community by adding it now! Capture its ingredients list or enter details below:</p>
+            
+            <div class="wizard-group" style="margin-bottom: 10px;">
+              <label class="wizard-label" style="font-size: 9px;">Brand Name:</label>
+              <input type="text" id="notfound-brand" placeholder="e.g. Haldiram's, Amul, Britannia" class="manual-input btn-block" style="min-height: 38px; padding: 6px 10px; font-size: 11px;">
+            </div>
+            
+            <div class="wizard-group" style="margin-bottom: 10px;">
+              <label class="wizard-label" style="font-size: 9px;">Product Name:</label>
+              <input type="text" id="notfound-name" placeholder="e.g. Aloo Bhujia, Salted Butter" class="manual-input btn-block" style="min-height: 38px; padding: 6px 10px; font-size: 11px;">
+            </div>
+
+            <div class="wizard-group" style="margin-bottom: 10px;">
+              <label class="wizard-label" style="font-size: 9px;">Category:</label>
+              <select id="notfound-category" class="wizard-select" style="min-height: 38px; padding: 6px 10px; font-size: 11px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-app); font-family: var(--font-sans); color: var(--text-primary); outline: none;">
+                <option value="snacks">Snacks</option>
+                <option value="breakfast">Breakfast</option>
+                <option value="drinks">Drinks</option>
+                <option value="dairy">Dairy</option>
+                <option value="condiments">Condiments</option>
+              </select>
+            </div>
+
+            <!-- OCR scanner built-in inside form -->
+            <div class="wizard-group" style="margin-bottom: 10px;">
+              <label class="wizard-label" style="font-size: 9px;">Scan Ingredients Label (Photo):</label>
+              <div class="drag-drop-area" id="notfound-ocr-drop-area" style="padding: 12px; border: 2px dashed var(--border-color); background: var(--bg-app); text-align: center; border-radius: 10px; cursor: pointer;">
+                <i class="ti ti-camera" style="font-size: 20px; color: var(--primary);"></i>
+                <span style="font-size: 10px; font-weight: 600; display: block; margin-top: 4px;">Take Photo of Ingredients</span>
+                <input type="file" id="notfound-ocr-file" accept="image/*" style="display: none;">
+              </div>
+              <div id="notfound-ocr-loading" style="display: none; align-items: center; justify-content: center; gap: 6px; margin-top: 6px; font-size: 10px; color: var(--text-secondary);">
+                <div class="simple-spinner"></div>
+                <span>Reading ingredients...</span>
+              </div>
+            </div>
+
+            <div class="wizard-group" style="margin-bottom: 14px;">
+              <label class="wizard-label" style="font-size: 9px;">Ingredients list text:</label>
+              <textarea id="notfound-ingredients" rows="3" placeholder="Paste ingredients list here or verify photo text..." class="ocr-textarea" style="font-size: 11px; padding: 8px; border-radius: 10px; border: 1px solid var(--border-color); width: 100%; outline: none; font-family: var(--font-sans);"></textarea>
+            </div>
+
+            <button type="button" class="btn btn-primary btn-block btn-sm" id="btn-submit-notfound-product" style="min-height: 40px; font-size: 12px;">
+              <i class="ti ti-check"></i> Audit & Analyze Product
+            </button>
+          </div>
+        </div>
+
+        <!-- Actions Footer -->
+        <div class="result-actions-footer">
+          <button class="btn btn-secondary btn-block" id="btn-add-to-today">
+            <i class="ti ti-plus"></i> Add to Today's Log
+          </button>
+          
+          <div class="footer-btn-row">
+            <button class="btn btn-outline" id="btn-share-result">
+              <i class="ti ti-share"></i> Share Audit
+            </button>
+            <button class="btn btn-primary" id="btn-retake-scan">
+              <i class="ti ti-scan"></i> Scan Another
+            </button>
+          </div>
+          
+          <div class="result-disclaimer-footer">
+            <p id="mandatory-disclaimer-text">For information only. Not medical advice. Always verify allergen information on the physical label.</p>
+            <p class="secondary-disclaimer" id="certification-disclaimer-text"></p>
+          </div>
+        </div>
+
+      </div> <!-- End Result Body -->
+    </div>
+  </div>
+
+  <!-- INGREDIENT EXPLAINER MODAL (Popup dialog for additives) -->
+  <div class="dialog-overlay" id="explainer-dialog" style="display: none;">
+    <div class="dialog-card card">
+      <h3 class="dialog-title" id="explainer-title">Additive Name</h3>
+      <div class="dialog-body">
+        <span class="additive-severity-badge" id="explainer-safety">Low Concern</span>
+        
+        <!-- Bilingual translation selector -->
+        <div class="explainer-lang-tabs" style="display: flex; justify-content: center; gap: 6px; margin-bottom: 12px;">
+          <button type="button" class="btn btn-secondary btn-sm active" id="btn-explainer-lang-en" style="min-height: 28px; padding: 2px 10px; font-size: 10px;">En</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-explainer-lang-hi" style="min-height: 28px; padding: 2px 10px; font-size: 10px;">हिन्दी</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-explainer-lang-ta" style="min-height: 28px; padding: 2px 10px; font-size: 10px;">தமிழ்</button>
+        </div>
+
+        <p class="dialog-desc" id="explainer-desc">Scientific additive explanation...</p>
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" id="btn-close-explainer">Understood</button>
+    </div>
+  </div>
+
+  <!-- CLINICAL MODE WARNING MODAL (First-use popup) -->
+  <div class="dialog-overlay" id="clinical-warning-dialog" style="display: none;">
+    <div class="dialog-card card">
+      <h3 class="dialog-title"><i class="ti ti-alert-triangle" style="color: var(--warning);"></i> Medical Disclaimer</h3>
+      <div class="dialog-body">
+        <p class="dialog-desc">This app provides general wellness guidance only. Consult your doctor before making dietary decisions based on a health condition.</p>
+      </div>
+      <button class="btn btn-primary btn-block btn-sm" id="btn-close-clinical-warning">I Agree</button>
+    </div>
+  </div>
+
+  <!-- SHARE CANVAS (Hidden) -->
+  <div class="hidden-canvas-container" style="display: none; position: absolute; left: -9999px;">
+    <canvas id="share-card-canvas" width="600" height="900"></canvas>
+  </div>
+
+  <!-- Toast Messages Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Core Javascript -->
+  <script src="app.js"></script>
+</body>
+</html>
