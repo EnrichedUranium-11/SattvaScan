@@ -1022,6 +1022,28 @@ function activateTabDirectly(tabId, pushHistory = true) {
   }
 }
 
+function closeResultSheetModal(syncHistory = true) {
+  const modal = document.getElementById("result-sheet-overlay");
+  const sheet = document.querySelector(".result-sheet");
+
+  if (!modal || modal.style.display === "none") return;
+
+  if (sheet) {
+    sheet.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
+    sheet.style.transform = "translateY(100%)";
+  }
+
+  setTimeout(() => {
+    modal.style.display = "none";
+    if (sheet) {
+      sheet.style.transform = "translateY(0)";
+      sheet.style.transition = "";
+    }
+    initializeCamera();
+    if (syncHistory) closeModalHistorySync();
+  }, 300);
+}
+
 function initTabs() {
   const buttons = document.querySelectorAll(".bottom-nav .nav-btn");
   buttons.forEach(btn => {
@@ -1038,10 +1060,9 @@ function initTabs() {
     const state = event.state;
     const modal = document.getElementById("result-sheet-overlay");
 
-    // 1. If back button pressed and modal is open, close modal
+    // 1. If back button pressed and modal is open, slide down & close modal
     if (modal && modal.style.display !== "none") {
-      modal.style.display = "none";
-      initializeCamera();
+      closeResultSheetModal(false);
       return;
     }
 
@@ -2961,10 +2982,12 @@ function processNotfoundIngredientsFile(file) {
 
 
 // ==========================================
-// 16. EARLY ACCESS WAITLIST SYSTEM
+// 16. EARLY ACCESS WAITLIST SYSTEM (Git-Backed)
 // ==========================================
 function initWaitlistSystem() {
-  const getWaitlistData = () => {
+  let gitRepoWaitlist = [];
+
+  const getLocalWaitlistData = () => {
     try {
       return JSON.parse(localStorage.getItem("sattva_waitlist_emails") || "[]");
     } catch(e) {
@@ -2973,12 +2996,39 @@ function initWaitlistSystem() {
   };
 
   const updateWaitlistUI = () => {
-    const list = getWaitlistData();
+    const localList = getLocalWaitlistData();
+    const combinedEmails = new Set([
+      ...gitRepoWaitlist.map(i => typeof i === "string" ? i.toLowerCase() : (i.email ? i.email.toLowerCase() : "")),
+      ...localList.map(i => i.email.toLowerCase())
+    ]);
+    combinedEmails.delete("");
+
     const countDisplay = document.getElementById("waitlist-count-display");
     if (countDisplay) {
-      countDisplay.textContent = list.length.toLocaleString("en-IN");
+      countDisplay.textContent = combinedEmails.size.toLocaleString("en-IN");
     }
   };
+
+  // Fetch waitlist.json from Git Repository root
+  fetch("waitlist.json")
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        gitRepoWaitlist = data;
+        updateWaitlistUI();
+      }
+    })
+    .catch(() => {
+      fetch("https://raw.githubusercontent.com/EnrichedUranium-11/SattvaScan/main/waitlist.json")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            gitRepoWaitlist = data;
+            updateWaitlistUI();
+          }
+        })
+        .catch(() => {});
+    });
 
   // Submit Waitlist Form
   const form = document.getElementById("waitlist-form");
@@ -2993,15 +3043,15 @@ function initWaitlistSystem() {
         return;
       }
 
-      const list = getWaitlistData();
-      if (list.some(item => item.email === email)) {
+      const localList = getLocalWaitlistData();
+      if (localList.some(item => item.email === email)) {
         showToast("You are already on the early access waitlist!", "info");
         document.getElementById("waitlist-success-msg").style.display = "block";
         return;
       }
 
-      list.push({ email: email, timestamp: Date.now(), source: "organic_signup" });
-      localStorage.setItem("sattva_waitlist_emails", JSON.stringify(list));
+      localList.push({ email: email, timestamp: Date.now(), source: "organic_signup" });
+      localStorage.setItem("sattva_waitlist_emails", JSON.stringify(localList));
 
       input.value = "";
       document.getElementById("waitlist-success-msg").style.display = "block";
@@ -3049,69 +3099,59 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-explainer-lang-hi").onclick = () => setAdditiveExplainerLanguage("hi");
   document.getElementById("btn-explainer-lang-ta").onclick = () => setAdditiveExplainerLanguage("ta");
 
-  // Close Result Modal
+  // Close Result Modal with smooth slide-down animation
   document.getElementById("result-sheet-close").onclick = () => {
-    document.getElementById("result-sheet-overlay").style.display = "none";
-    initializeCamera(); // Restart camera scanning
-    closeModalHistorySync();
+    closeResultSheetModal();
   };
   document.getElementById("btn-retake-scan").onclick = () => {
-    document.getElementById("result-sheet-overlay").style.display = "none";
-    initializeCamera(); // Restart camera scanning
-    closeModalHistorySync();
+    closeResultSheetModal();
   };
 
   // Swipe-down to close result sheet modal
   const resultSheet = document.querySelector(".result-sheet");
-  const resultOverlay = document.getElementById("result-sheet-overlay");
 
   let startY = 0;
   let currentY = 0;
   let isDragging = false;
 
-  resultSheet.addEventListener("touchstart", (e) => {
-    const rect = resultSheet.getBoundingClientRect();
-    const touchY = e.touches[0].clientY - rect.top;
-    
-    // Only allow drag starting from the top 60px of the sheet
-    if (touchY > 60) return;
+  if (resultSheet) {
+    resultSheet.addEventListener("touchstart", (e) => {
+      const rect = resultSheet.getBoundingClientRect();
+      const touchY = e.touches[0].clientY - rect.top;
+      
+      // Only allow drag starting from the top 60px of the sheet
+      if (touchY > 60) return;
 
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    resultSheet.style.transition = "none";
-  }, { passive: true });
+      startY = e.touches[0].clientY;
+      isDragging = true;
+      resultSheet.style.transition = "none";
+    }, { passive: true });
 
-  resultSheet.addEventListener("touchmove", (e) => {
-    if (!isDragging) return;
-    currentY = e.touches[0].clientY;
-    const deltaY = currentY - startY;
+    resultSheet.addEventListener("touchmove", (e) => {
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
 
-    if (deltaY > 0) {
-      resultSheet.style.transform = `translateY(${deltaY}px)`;
-    }
-  }, { passive: true });
+      if (deltaY > 0) {
+        resultSheet.style.transform = `translateY(${deltaY}px)`;
+      }
+    }, { passive: true });
 
-  resultSheet.addEventListener("touchend", () => {
-    if (!isDragging) return;
-    isDragging = false;
-    
-    const deltaY = currentY - startY;
-    resultSheet.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
+    resultSheet.addEventListener("touchend", () => {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      const deltaY = currentY - startY;
 
-    if (deltaY > 100) {
-      // Close modal
-      resultSheet.style.transform = "translateY(100%)";
-      setTimeout(() => {
-        resultOverlay.style.display = "none";
-        resultSheet.style.transform = "translateY(0)"; // Reset translation offset
-        initializeCamera();
-        closeModalHistorySync();
-      }, 300);
-    } else {
-      // Snap back
-      resultSheet.style.transform = "translateY(0)";
-    }
-  });
+      if (deltaY > 90) {
+        closeResultSheetModal();
+      } else {
+        // Snap back smoothly
+        resultSheet.style.transition = "transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)";
+        resultSheet.style.transform = "translateY(0)";
+      }
+    });
+  }
 
   // Fallback Tab switching inside Scan Tab
   document.querySelectorAll(".fallback-tab-btn").forEach(btn => {
