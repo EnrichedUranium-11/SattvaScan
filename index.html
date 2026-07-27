@@ -46,7 +46,9 @@
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="style.css">
   
-  <!-- Core Scanning & OCR CDNs -->
+  <!-- Core Scanning & OCR CDNs (Multi-Engine Barcode Architecture) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://unpkg.com/tesseract.js@5.0.3/dist/tesseract.min.js"></script>
 
@@ -278,6 +280,37 @@
       <section id="tab-today" class="tab-panel">
         <div class="tracker-dashboard">
           
+          <!-- Early Access Waitlist Card -->
+          <div class="waitlist-card card" style="background: linear-gradient(135deg, rgba(74,124,89,0.08) 0%, rgba(232,149,109,0.08) 100%); border: 1.5px solid rgba(74,124,89,0.2);">
+            <div class="waitlist-header" style="margin-bottom: 8px;">
+              <span class="badge badge-success" style="background: var(--primary); color: #fff; font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600;">EARLY ACCESS</span>
+              <h3 class="card-title" style="margin-top: 6px; font-size: 1.25rem;">Join Sattva Early Access Waitlist</h3>
+            </div>
+            
+            <p class="card-desc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 12px;">
+              Get instant alert notifications when food products with hidden palm oil, harmful INS additives, or heavy adulterants are recalled in India.
+            </p>
+
+            <div class="social-proof-bar" style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+              <span class="proof-count" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">
+                Joined by <strong id="waitlist-count-display" style="color: var(--primary); font-size: 0.95rem;">0</strong> health-conscious members!
+              </span>
+            </div>
+
+            <form id="waitlist-form" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="input-with-icon" style="position: relative;">
+                <input type="email" id="waitlist-email-input" class="form-input" placeholder="Enter your email address..." required style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border-color); font-size: 0.9rem; font-family: 'Outfit', sans-serif;">
+              </div>
+              <button type="submit" id="btn-join-waitlist" class="btn btn-primary btn-block" style="border-radius: 12px; padding: 12px; font-weight: 600; font-size: 0.95rem;">
+                <i class="ti ti-mail-fast"></i> Join Early Access Waitlist
+              </button>
+            </form>
+            
+            <div id="waitlist-success-msg" style="display: none; background: rgba(74,124,89,0.12); color: var(--primary); padding: 12px; border-radius: 10px; font-size: 0.88rem; font-weight: 600; text-align: center; margin-top: 8px;">
+              🎉 You're on the early access waitlist! We'll send updates to your inbox.
+            </div>
+          </div>
+
           <!-- Calories Circular Progress Card -->
           <div class="tracker-card card">
             <h3 class="card-title">Daily Energy Log</h3>
@@ -882,6 +915,8 @@
   <div class="hidden-canvas-container" style="display: none; position: absolute; left: -9999px;">
     <canvas id="share-card-canvas" width="600" height="900"></canvas>
   </div>
+
+
 
   <!-- Toast Messages Container -->
   <div class="toast-container" id="toast-container"></div>

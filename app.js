@@ -1188,103 +1188,142 @@ function bindCameraControls(stream) {
 }
 
 // ==========================================
-// 5. RESILIENT CAMERA & STREAM LIFECYCLE
+// 5. RESILIENT MULTI-ENGINE CAMERA SCANNER
 // ==========================================
 function initializeCamera() {
   if (STATE.cameraActive) return;
   
   const statusMsg = document.getElementById("scan-status-message");
-  statusMsg.textContent = "Accessing camera stream...";
+  statusMsg.textContent = "Accessing HD camera stream...";
   document.getElementById("viewfinder-controls").style.display = "none";
-  
-  const formatsToSupport = [
-    Html5QrcodeSupportedFormats.EAN_13,
-    Html5QrcodeSupportedFormats.EAN_8,
-    Html5QrcodeSupportedFormats.UPC_A
-  ];
 
-  // 1. Try Native Browser BarcodeDetector
-  if ('BarcodeDetector' in window) {
-    const video = document.createElement("video");
-    video.autoplay = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
+  const container = document.getElementById("scanner-video-container");
+  container.innerHTML = "";
 
-    const container = document.getElementById("scanner-video-container");
-    container.innerHTML = "";
-    container.appendChild(video);
+  // Create Video Element
+  const video = document.createElement("video");
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
+  video.setAttribute('muted', '');
+  video.setAttribute('playsinline', '');
+  video.style.width = "100%";
+  video.style.height = "100%";
+  video.style.objectFit = "cover";
+  container.appendChild(video);
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(stream => {
-        video.srcObject = stream;
-        STATE.videoStream = stream;
-        STATE.cameraActive = true;
-        statusMsg.textContent = "Align barcode inside the camera guides.";
-        document.getElementById("viewfinder-controls").style.display = "block";
-        bindCameraControls(stream);
+  const videoConstraints = {
+    facingMode: "environment",
+    width: { ideal: 1920, min: 1280 },
+    height: { ideal: 1080, min: 720 },
+    focusMode: "continuous"
+  };
 
-        let detector;
+  navigator.mediaDevices.getUserMedia({ video: videoConstraints })
+    .then(stream => {
+      video.srcObject = stream;
+      STATE.videoStream = stream;
+      STATE.cameraActive = true;
+      statusMsg.textContent = "Align barcode inside camera view.";
+      document.getElementById("viewfinder-controls").style.display = "block";
+      bindCameraControls(stream);
+
+      let foundBarcode = false;
+      const onBarcodeDetected = (code) => {
+        if (foundBarcode || !STATE.cameraActive) return;
+        foundBarcode = true;
+        showToast("Barcode recognized!", "success");
+        stopCameraScanner();
+        triggerProductAudit(code);
+      };
+
+      // ENGINE 1: ZXing MultiFormat Reader
+      if (window.ZXing && window.ZXing.BrowserMultiFormatReader) {
         try {
-          detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a'] });
+          const zxingReader = new ZXing.BrowserMultiFormatReader();
+          STATE.zxingReader = zxingReader;
+          zxingReader.decodeFromVideoElement(video, (result, err) => {
+            if (result && result.getText()) {
+              onBarcodeDetected(result.getText());
+            }
+          });
         } catch (e) {
-          console.warn("Native BarcodeDetector failed, falling back to Html5Qrcode:", e);
-          stopCameraScanner();
-          startHtml5QrcodeFallback(formatsToSupport);
-          return;
+          console.warn("ZXing scanner init error:", e);
         }
+      }
 
-        const detectFrame = () => {
-          if (!STATE.cameraActive) return;
-          if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            detector.detect(video)
-              .then(barcodes => {
-                if (barcodes.length > 0) {
-                  showToast("Barcode recognized!", "success");
-                  stopCameraScanner();
-                  triggerProductAudit(barcodes[0].rawValue);
-                } else {
-                  STATE.scannerLoopId = requestAnimationFrame(detectFrame);
-                }
-              })
-              .catch(err => {
-                console.error("Native detector error:", err);
-                stopCameraScanner();
-                startHtml5QrcodeFallback(formatsToSupport);
-              });
-          } else {
-            STATE.scannerLoopId = requestAnimationFrame(detectFrame);
-          }
-        };
-        detectFrame();
-      })
-      .catch(err => {
-        console.warn("Native getUserMedia failed, falling back to Html5Qrcode:", err);
-        startHtml5QrcodeFallback(formatsToSupport);
-      });
-  } else {
-    startHtml5QrcodeFallback(formatsToSupport);
-  }
+      // ENGINE 2: Native BarcodeDetector API (if supported)
+      if ('BarcodeDetector' in window) {
+        try {
+          const detector = new BarcodeDetector({ 
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'] 
+          });
+
+          const detectFrame = () => {
+            if (!STATE.cameraActive || foundBarcode) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+              detector.detect(video)
+                .then(barcodes => {
+                  if (barcodes.length > 0) {
+                    onBarcodeDetected(barcodes[0].rawValue);
+                  } else {
+                    STATE.scannerLoopId = requestAnimationFrame(detectFrame);
+                  }
+                })
+                .catch(() => {
+                  if (STATE.cameraActive) STATE.scannerLoopId = requestAnimationFrame(detectFrame);
+                });
+            } else {
+              STATE.scannerLoopId = requestAnimationFrame(detectFrame);
+            }
+          };
+          detectFrame();
+        } catch (e) {
+          console.warn("Native BarcodeDetector error:", e);
+        }
+      }
+    })
+    .catch(err => {
+      console.warn("Direct stream access failed. Trying Html5Qrcode fallback...", err);
+      startHtml5QrcodeFallback();
+    });
 }
 
-function startHtml5QrcodeFallback(formats) {
+function startHtml5QrcodeFallback() {
   const statusMsg = document.getElementById("scan-status-message");
-  statusMsg.textContent = "Starting camera helper...";
+  statusMsg.textContent = "Starting high-speed scanner...";
   document.getElementById("viewfinder-controls").style.display = "block";
 
   const container = document.getElementById("scanner-video-container");
   container.innerHTML = "";
 
+  const allFormats = [
+    Html5QrcodeSupportedFormats.EAN_13,
+    Html5QrcodeSupportedFormats.EAN_8,
+    Html5QrcodeSupportedFormats.UPC_A,
+    Html5QrcodeSupportedFormats.UPC_E,
+    Html5QrcodeSupportedFormats.CODE_128,
+    Html5QrcodeSupportedFormats.CODE_39,
+    Html5QrcodeSupportedFormats.CODE_93,
+    Html5QrcodeSupportedFormats.ITF
+  ];
+
   STATE.scannerInstance = new Html5Qrcode("scanner-video-container");
   STATE.scannerInstance.start(
     { facingMode: "environment" },
-    { fps: 15, qrbox: { width: 250, height: 150 }, formatsToSupport: formats },
+    { 
+      fps: 30, 
+      qrbox: (viewfinderWidth, viewfinderHeight) => {
+        return {
+          width: Math.floor(viewfinderWidth * 0.85),
+          height: Math.floor(viewfinderHeight * 0.55)
+        };
+      },
+      formatsToSupport: allFormats,
+      experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+    },
     (decodedText) => {
-      showToast("Barcode found!", "success");
+      showToast("Barcode recognized!", "success");
       stopCameraScanner();
       triggerProductAudit(decodedText);
     },
@@ -1293,7 +1332,6 @@ function startHtml5QrcodeFallback(formats) {
     STATE.cameraActive = true;
     statusMsg.textContent = "Align barcode inside camera guides.";
     
-    // Bind controls
     const video = document.querySelector("#scanner-video-container video");
     if (video && video.srcObject) {
       STATE.videoStream = video.srcObject;
@@ -1301,13 +1339,17 @@ function startHtml5QrcodeFallback(formats) {
     }
   }).catch(err => {
     console.error("Html5Qrcode initialization error:", err);
-    statusMsg.textContent = "Camera blocked or inaccessible. Enter manually.";
+    statusMsg.textContent = "Camera blocked or inaccessible. Enter barcode manually.";
   });
 }
 
 function stopCameraScanner() {
   STATE.cameraActive = false;
   
+  if (STATE.zxingReader) {
+    try { STATE.zxingReader.reset(); } catch (e) {}
+    STATE.zxingReader = null;
+  }
   if (STATE.scannerLoopId) {
     cancelAnimationFrame(STATE.scannerLoopId);
     STATE.scannerLoopId = null;
@@ -1316,13 +1358,17 @@ function stopCameraScanner() {
     STATE.videoStream.getTracks().forEach(track => track.stop());
     STATE.videoStream = null;
   }
-  if (STATE.scannerInstance && STATE.scannerInstance.isScanning) {
-    STATE.scannerInstance.stop().catch(err => console.error("Html5Qrcode stop error:", err));
+  if (STATE.scannerInstance) {
+    try {
+      if (STATE.scannerInstance.isScanning) {
+        STATE.scannerInstance.stop().catch(err => console.error("Html5Qrcode stop error:", err));
+      }
+    } catch (e) {}
     STATE.scannerInstance = null;
   }
 
   const container = document.getElementById("scanner-video-container");
-  container.innerHTML = "";
+  if (container) container.innerHTML = "";
 }
 
 // ==========================================
@@ -2912,8 +2958,66 @@ function processNotfoundIngredientsFile(file) {
   });
 }
 
+
+
 // ==========================================
-// 15. INITIALIZE ALL COMPONENTS
+// 16. EARLY ACCESS WAITLIST SYSTEM
+// ==========================================
+function initWaitlistSystem() {
+  const getWaitlistData = () => {
+    try {
+      return JSON.parse(localStorage.getItem("sattva_waitlist_emails") || "[]");
+    } catch(e) {
+      return [];
+    }
+  };
+
+  const updateWaitlistUI = () => {
+    const list = getWaitlistData();
+    const countDisplay = document.getElementById("waitlist-count-display");
+    if (countDisplay) {
+      countDisplay.textContent = list.length.toLocaleString("en-IN");
+    }
+  };
+
+  // Submit Waitlist Form
+  const form = document.getElementById("waitlist-form");
+  if (form) {
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const input = document.getElementById("waitlist-email-input");
+      const email = input.value.trim().toLowerCase();
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast("Please enter a valid email address.", "error");
+        return;
+      }
+
+      const list = getWaitlistData();
+      if (list.some(item => item.email === email)) {
+        showToast("You are already on the early access waitlist!", "info");
+        document.getElementById("waitlist-success-msg").style.display = "block";
+        return;
+      }
+
+      list.push({ email: email, timestamp: Date.now(), source: "organic_signup" });
+      localStorage.setItem("sattva_waitlist_emails", JSON.stringify(list));
+
+      input.value = "";
+      document.getElementById("waitlist-success-msg").style.display = "block";
+      showToast("🎉 Welcome to Sattva Early Access Waitlist!", "success");
+
+      console.log("[Sattva Waitlist] New Email Registered:", email);
+      updateWaitlistUI();
+    };
+  }
+
+  // Initial UI Render
+  updateWaitlistUI();
+}
+
+// ==========================================
+// 17. INITIALIZE ALL COMPONENTS
 // ==========================================
 window.addEventListener("DOMContentLoaded", () => {
   // Load local state
@@ -2926,6 +3030,7 @@ window.addEventListener("DOMContentLoaded", () => {
   initLearnLookup();
   initOcrEngine();
   initCompareMode();
+  initWaitlistSystem();
   renderBadgesGrid();
 
   // Active onboarding check
